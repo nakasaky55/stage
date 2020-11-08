@@ -48,10 +48,10 @@ axiosInstance.interceptors.response.use(
 
     if (error?.response?.status === 401 && token && token.length > 0) {
       const originalRequest = error.config;
-      // if (originalRequest.url.indexOf("access_token/refresh") > 0) {
-      //   // router.push("/login");
-      //   return Promise.reject(error);
-      // }
+      if (originalRequest.url.indexOf("access_token/refresh") > 0) {
+        router.push("/login");
+        return Promise.reject(error);
+      }
       if (!originalRequest._retry) {
         return store
           .dispatch("auth/fetchRefreshToken")
