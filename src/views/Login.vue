@@ -45,9 +45,9 @@ export default {
         username: this.username,
         password: this.password,
       };
-      this.$store
-        .dispatch("user/login", user)
-        .then(() => this.$router.push({ name: "Dashboard" }));
+      this.$store.dispatch("auth/login", user).then(() => {
+        this.$router.push({ name: "Dashboard" });
+      });
     },
   },
 };

@@ -3,6 +3,7 @@
     <v-app-bar dark color="primary lighten-1" app>
       <v-toolbar-title><h1>Stage Dashboard</h1></v-toolbar-title>
       <v-spacer></v-spacer>
+      <p class="pname" v-show="!!user">{{ user }}</p>
       <v-btn v-if="!loggedIn" text rounded to="login">Login</v-btn>
       <v-btn v-else text rounded @click="logout">Logout</v-btn>
     </v-app-bar>
@@ -29,11 +30,20 @@ export default {
   }),
   methods: {
     logout() {
-      this.$store.dispatch("user/logout");
+      this.$store.dispatch("auth/logout");
     },
   },
   computed: {
-    ...mapGetters("user", ["loggedIn"]),
+    ...mapGetters("auth", ["loggedIn"]),
+    user() {
+      return this.$store.getters["user/getCurrentUser"];
+    },
   },
 };
 </script>
+
+<style scoped>
+.pname {
+  margin-bottom: 0;
+}
+</style>

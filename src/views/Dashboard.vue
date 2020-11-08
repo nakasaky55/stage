@@ -16,6 +16,9 @@ export default {
     model: 0,
     colors: ["primary", "secondary", "yellow darken-2", "red", "orange"],
   }),
+  created() {
+    this.$store.dispatch("user/fetchCurrent");
+  },
 };
 </script>
 

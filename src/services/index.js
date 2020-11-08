@@ -1,4 +1,4 @@
-import baseService from "./baseService";
-import { baseUrl } from "./base";
+import authService from "./auth";
+import userService from "./user";
 
-export { baseService, baseUrl };
+export { authService, userService };

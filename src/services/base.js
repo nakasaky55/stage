@@ -3,10 +3,10 @@ const ACCESS_TOKEN_KEY = "access_token";
 
 let appSettings;
 try {
-  appSettings = JSON.parse(APP_CONFIG || "https://api-staging.1on1english.vn");
+  appSettings = JSON.parse(APP_CONFIG || "http://159.89.19.111/V2.0/");
 } catch (ex) {
   appSettings = {
-    API_ENDPOINT: "https://api-staging.1on1english.vn",
+    API_ENDPOINT: "http://159.89.19.111/V2.0/",
   };
 }
 

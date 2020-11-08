@@ -1,10 +1,11 @@
 import axios from "axios";
+import store from "@/store/store";
+import router from "@/router";
+// import router from "@/router";
 
-const UNKNOWN_ERROR_MESSAGE = "Unknown network error!";
 const AXIOS_TIMEOUT = 10000;
 
 const mockApi = "https://5f3bb099fff8550016ae5862.mockapi.io/api";
-const token = window.localStorage.getItem("access_token") || "";
 
 const axiosInstance = axios.create({
   baseURL: mockApi,
@@ -12,33 +13,68 @@ const axiosInstance = axios.create({
   headers: {
     Accept: "application/json",
     "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
   },
 });
+
+axiosInstance.interceptors.request.use(
+  (config) => {
+    // do something before request is sent
+    const token = store.getters["auth/getToken"] || "";
+
+    if (token && typeof config.headers["X-Access-Token"] === "undefined") {
+      config.headers["X-Access-Token"] = token;
+    }
+
+    config.headers["Accept"] = "application/json";
+
+    config.headers["Content-Type"] = "application/json";
+
+    config.headers["Access-Control-Allow-Origin"] = "*";
+
+    return config;
+  },
+
+  (error) => {
+    console.log("error request", error);
+
+    return Promise.reject(error);
+  }
+);
 
 axiosInstance.interceptors.response.use(
   (response) => ({ ...response, error: null }),
   (error) => {
-    window.console.log(
-      `[Error] Message:${error.message} ${
-        error.response
-          ? `response_data: ${JSON.stringify(error.response.data)}`
-          : ""
-      }`
-    );
-    if (
-      error?.response?.status === 401 &&
-      error?.response?.data?.status === "UNAUTHORIZED"
-    ) {
-      window.location.replace("/login");
-      window.localStorage.clear();
+    const token = store.getters["auth/getToken"] || "";
+
+    if (error?.response?.status === 401 && token && token.length > 0) {
+      const originalRequest = error.config;
+      // if (originalRequest.url.indexOf("access_token/refresh") > 0) {
+      //   // router.push("/login");
+      //   return Promise.reject(error);
+      // }
+      if (!originalRequest._retry) {
+        return store
+          .dispatch("auth/fetchRefreshToken")
+          .then((resp) => {
+            originalRequest._retry = true;
+            return axiosInstance({
+              url: originalRequest.url,
+              method: originalRequest.method,
+              headers: {
+                Accept: originalRequest.headers.Accept,
+                "X-Access-Token": resp,
+              },
+            });
+          })
+          .catch(() => {
+            router.push("/login");
+          });
+      }
+      // window.location.replace("/login");
+      // window.localStorage.clear();
     }
 
-    return {
-      status: (error.response && error.response.status) || 0,
-      data: (error.response && error.response.data) || {},
-      error: error.message || UNKNOWN_ERROR_MESSAGE,
-    };
+    return Promise.reject(error);
   }
 );
 
